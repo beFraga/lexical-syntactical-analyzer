@@ -25,6 +25,10 @@ const set<char>& Automaton::getAlphabet() {
     return _alphabet;
 }
 
+bool Automaton::isAccepting(int state) const {
+	return _acceptingStates.find(state) != _acceptingStates.end();
+}
+
 void Automaton::addState(int state) {
     _states.insert(state);
 }
@@ -66,12 +70,35 @@ set<int> Automaton::getEpsilonTransitions(int from) {
     return {};
 }
 
-string Automaton::getTokenPattern(int state) {
+string Automaton::getTokenPattern(int state) const {
     auto it = _tokenPatterns.find(state);
     if (it != _tokenPatterns.end()) {
         return it->second;
     }
     return "";
+}
+
+int Automaton::getNextState(int from, char symbol) const {
+	auto it = _transitions.find({from, symbol});
+	if (it != _transitions.end() && !it->second.empty())
+		return *(it->second.begin());
+	return -1;
+}
+
+string Automaton::eval(const string & input) const {
+	int cur = _initialState;
+	for (char c : input) {
+		int next = getNextState(cur, c);
+		if (next == -1) return "REJECTED";
+		cur = next;
+	}
+
+	if (isAccepting(cur)) {
+		string pattern = getTokenPattern(cur);
+		return pattern.empty() ? "ACCEPTED" : pattern;
+	}
+
+	return "REJECTED";
 }
 
 void Automaton::printTable() {

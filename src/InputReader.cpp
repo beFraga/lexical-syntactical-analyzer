@@ -5,7 +5,7 @@
 using namespace std;
 
 
-vector<tuple<string, string>> InputReader::readFile(const string & addressToRead) {
+vector<tuple<string, string>> InputReader::readInput(const string & addressToRead) {
     vector<tuple<string, string>> lines;
     string line;
 
@@ -35,4 +35,24 @@ vector<tuple<string, string>> InputReader::readFile(const string & addressToRead
 
     fileToRead.close();    
     return lines;
+}
+
+vector<string> InputReader::readTest(const string & addressToRead) {
+	vector<string> lines;
+	string line;
+	
+	ifstream fileToRead(addressToRead);
+    if (!fileToRead.is_open()) {
+        cerr << "Error: was not possible to open file " << addressToRead << endl;
+        return lines;
+    }
+    
+    while (getline(fileToRead, line)) {
+		if (line.empty()) continue;
+		lines.emplace_back(line);
+    }
+
+    fileToRead.close();    
+    return lines;
+
 }

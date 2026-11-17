@@ -35,6 +35,8 @@ public:
     const set<int>& getFinalStates();
     const set<char>& getAlphabet();
 
+	bool isAccepting(int state) const;
+
     // montar o autômato
     void addState(int state);
     void addFinalState(int state, const string& patternName = "");
@@ -44,7 +46,10 @@ public:
     // consultar transições
     set<int> getTransitions(int from, char symbol);
     set<int> getEpsilonTransitions(int from);
-    string getTokenPattern(int state);
+    string getTokenPattern(int state) const;
+
+	string eval(const std::string & input) const;
+	int getNextState(int from, char symbol) const;
 
     // visualizar tabela de transições
     void printTable();

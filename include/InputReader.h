@@ -17,5 +17,6 @@ using namespace std;
 
 class InputReader {
 public:
-    static vector<tuple<string, string>> readFile(const string & addressToRead);
+    static vector<tuple<string, string>> readInput(const string & addressToRead);
+	static vector<string> readTest(const string & addressToRead);
 };
