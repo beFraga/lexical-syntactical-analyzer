@@ -18,7 +18,7 @@ private:
     // Transições normais (estado_origem -> símbolo) -> conjunto de estados destino
     map<pair<int, char>, set<int>> _transitions;
 
-    // Transições vaizas 
+    // Transições vazias
     map<int, set<int>> _epsilonTransitions;
 
     // Mapeamento estado_de_aceitação -> token (ex: "id", "num")
