@@ -31,9 +31,9 @@ public:
     void setInitialState(int state);
     int getInitialState() const;
     
-    const set<int>& getStates();
-    const set<int>& getFinalStates();
-    const set<char>& getAlphabet();
+    const set<int>& getStates() const;
+    const set<int>& getFinalStates() const;
+    const set<char>& getAlphabet() const;
 
 	bool isAccepting(int state) const;
 

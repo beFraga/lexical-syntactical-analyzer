@@ -13,15 +13,15 @@ int Automaton::getInitialState() const {
     return _initialState;
 }
 
-const set<int>& Automaton::getStates() {
+const set<int>& Automaton::getStates() const{
     return _states;
 }
 
-const set<int>& Automaton::getFinalStates() {
+const set<int>& Automaton::getFinalStates() const {
     return _acceptingStates;
 }
 
-const set<char>& Automaton::getAlphabet() {
+const set<char>& Automaton::getAlphabet() const {
     return _alphabet;
 }
 
