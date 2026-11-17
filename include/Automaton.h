@@ -29,7 +29,7 @@ public:
 
     // getters e setters
     void setInitialState(int state);
-    int getInitialState();
+    int getInitialState() const;
     
     const set<int>& getStates();
     const set<int>& getFinalStates();
@@ -45,7 +45,8 @@ public:
 
     // consultar transições
     set<int> getTransitions(int from, char symbol);
-    set<int> getEpsilonTransitions(int from);
+    map<char, set<int>> getTransitions(int from) const;
+    set<int> getEpsilonTransitions(int from) const;
     string getTokenPattern(int state) const;
 
 	string eval(const std::string & input) const;

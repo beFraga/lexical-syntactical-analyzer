@@ -9,7 +9,7 @@ void Automaton::setInitialState(int state) {
     addState(state);
 }
 
-int Automaton::getInitialState() {
+int Automaton::getInitialState() const {
     return _initialState;
 }
 
@@ -62,7 +62,16 @@ set<int> Automaton::getTransitions(int from, char symbol) {
     return {};
 }
 
-set<int> Automaton::getEpsilonTransitions(int from) {
+map<char, set<int>> Automaton::getTransitions(int from) const {
+    map<char, set<int>> res;
+    pair<int, char> begin = {from, 0};
+    for (auto it = _transitions.lower_bound(begin); it->first.first == from; ++it) {
+        res[it->first.second] = it->second;
+    }
+    return res;
+}
+
+set<int> Automaton::getEpsilonTransitions(int from) const {
     auto it = _epsilonTransitions.find(from);
     if (it != _epsilonTransitions.end()) {
         return it->second;
