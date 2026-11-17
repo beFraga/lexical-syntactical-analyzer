@@ -3,5 +3,5 @@
 
 class Minimizer {
 public:
-    Automaton getMinimized(const Automaton &a);
+    static Automaton getMinimized(const Automaton &a);
 };
