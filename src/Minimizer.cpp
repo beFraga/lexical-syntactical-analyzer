@@ -3,39 +3,51 @@
 #include <algorithm>
 #include <numeric>
 #include <queue>
+#include <unordered_map>
+using namespace std;
 
-std::map<int, int> getReachableStates(const Automaton &a) {
+namespace {
+    map<int, int> getReachableStates(const Automaton &a) {
 
-    std::map<int, int> component;
+        map<int, int> component;
 
-    int ini = a.getInitialState();
-    component[ini] = 0;
-    std::queue<int> queue;
-    queue.push(ini);
-    while (!queue.empty()) {
-        int at = queue.front();
-        queue.pop();
-        std::map<char, std::set<int>> transitions = a.getTransitions(at);
-        for (auto &[f, to] : transitions) {
-            if (to.begin() != to.end() ) {
-                 at = *to.begin();
-                if (!component.count(at)) {
-                    component[at] = 0;
-                    queue.push(at);
+        int ini = a.getInitialState();
+        component[ini] = 0;
+        queue<int> queue;
+        queue.push(ini);
+        while (!queue.empty()) {
+            int at = queue.front();
+            queue.pop();
+            map<char, set<int>> transitions = a.getTransitions(at);
+            for (auto &[f, to] : transitions) {
+                if (to.begin() != to.end() ) {
+                    int nxt = *to.begin();
+                    if (!component.count(nxt)) {
+                        component[nxt] = 0;
+                        queue.push(nxt);
+                    }
                 }
             }
         }
+        return component;
     }
-    return component;
 }
 
 Automaton Minimizer::getMinimized(const Automaton& a) {
-    std::map<int, int> components = getReachableStates(a); // =0 => dead
+    map<int, int> components = getReachableStates(a); // =0 => dead
     components[-1] = 0;
+    int maxComp = 0;
     bool hasFinal = false;
+    unordered_map<string, int>  tokenComponent;
     for (int s : a.getFinalStates()) {
-        if (std::map<int, int>::iterator it; (it = components.find(s)) != components.end()) {
-            it->second = 1;
+        if (map<int, int>::iterator it; (it = components.find(s)) != components.end()) {
+            string token = a.getTokenPattern(s);
+            int comp = tokenComponent[token];
+            if (comp)
+                it->second = comp;
+            else
+                it->second = tokenComponent[token] = ++maxComp;
+
             hasFinal = true;
         }
     }
@@ -43,21 +55,20 @@ Automaton Minimizer::getMinimized(const Automaton& a) {
     if (!hasFinal)
         return {};
 
-    int maxComp = 1;
+
     bool changed;
     do {
         changed = false;
         for (char symbol : a.getAlphabet()) {
-            std::vector<std::pair<int, int>> compChanges;  //{state, newComp}
-            std::map<std::pair<int, int>, int> transitions; //{sourceComp, destComp}
-            std::vector<int> isFirst(maxComp + 1, true);
+            vector<pair<int, int>> compChanges;  //{state, newComp}
+            map<pair<int, int>, int> transitions; //{sourceComp, destComp}
+            vector<int> isFirst(maxComp + 1, true);
 
             for (auto [state, srcComp] : components) {
-                if (srcComp == 0) continue;
 
                 int dest = a.getNextState(state, symbol);
                 int destComp = components[dest];
-                std::pair<int, int> trans = {srcComp, destComp};
+                pair<int, int> trans = {srcComp, destComp};
                 if (isFirst[srcComp]) {
                     transitions[trans] = srcComp;
                     isFirst[srcComp] = false;
@@ -65,9 +76,9 @@ Automaton Minimizer::getMinimized(const Automaton& a) {
                     auto t = transitions.find(trans);
                     if (t == transitions.end()) {
                         transitions[trans] = ++maxComp;
-                        compChanges.emplace_back(state, destComp);
+                        compChanges.emplace_back(state, maxComp);
                     } else if (t->second != srcComp) {
-                        compChanges.emplace_back(state, destComp);
+                        compChanges.emplace_back(state, t->second);
                     }
                 }
             }
@@ -81,8 +92,8 @@ Automaton Minimizer::getMinimized(const Automaton& a) {
 
     } while (changed);
 
-    std::map<std::pair<int, char>, int> compTransitions;
-    std::vector<bool> done(maxComp+1, false);
+    map<pair<int, char>, int> compTransitions;
+    vector<bool> done(maxComp+1, false);
     done[0] = true;
     for (auto [state, comp] : components) {
         if (!done[comp]) {
@@ -111,8 +122,10 @@ Automaton Minimizer::getMinimized(const Automaton& a) {
     ret.setInitialState(iniComp);
 
     for (int f : a.getFinalStates()) {
-        if (components.count(f)) {
-            ret.addFinalState(f);
+        auto it = components.find(f);
+        if (it != components.end()) {
+            string token = a.getTokenPattern(f);
+            ret.addFinalState(it->second, token);
         }
     }
 
