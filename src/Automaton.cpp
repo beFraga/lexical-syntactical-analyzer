@@ -110,6 +110,42 @@ string Automaton::eval(const string & input) const {
 	return "REJECTED";
 }
 
+Automaton Automaton::uniteAutomata(const vector<Automaton> & automata) {
+    // Inicialização, criando estado novo
+    Automaton resultant;
+    resultant.setInitialState(0);
+
+    for (const Automaton& a : automata) {
+        // Calcular offset para não repetir estados
+        int offset = *resultant.getStates().rbegin() + 1;
+
+        // Adicionar transição epsilon para o estado inicial de 'a'
+        resultant.addEpsilonTransition(resultant.getInitialState(), a.getInitialState() + offset);
+    
+        // Para cada estado de 'a', adicionar o estado e as transições no autômato resultante
+        for (int state : a.getStates()) {
+            resultant.addState(state+offset);
+            for (const auto& [symbol, destinations] : a.getTransitions(state)) {
+                for (int d : destinations) {
+                    resultant.addTransition(state+offset, symbol, d+offset);
+                }
+            }
+            
+            // Adicionar transições epsilon
+            for (int d : a.getEpsilonTransitions(state)) {
+                resultant.addEpsilonTransition(state+offset, d+offset);
+            }
+        }
+
+        // Adicionar estados finais
+        for (int state : a.getFinalStates()) {
+            resultant.addFinalState(state+offset, a.getTokenPattern(state));
+        }
+    }
+
+    return resultant;
+}
+
 void Automaton::printTable() {
     cout << "\n=== TABELA DE TRANSIÇÕES DO AUTÔMATO ===" << endl;
     cout << "Estado Inicial: q" << _initialState << endl;
