@@ -28,9 +28,7 @@ public:
     Automaton();
 
     // getters e setters
-    void setInitialState(int state);
     int getInitialState() const;
-    
     const set<int>& getStates() const;
     const set<int>& getFinalStates() const;
     const set<char>& getAlphabet() const;
@@ -38,13 +36,14 @@ public:
 	bool isAccepting(int state) const;
 
     // montar o autômato
+    void setInitialState(int state);
     void addState(int state);
     void addFinalState(int state, const string& patternName = "");
     void addTransition(int from, char symbol, int to);
     void addEpsilonTransition(int from, int to);
 
     // consultar transições
-    set<int> getTransitions(int from, char symbol);
+    set<int> getTransitions(int from, char symbol) const;
     map<char, set<int>> getTransitions(int from) const;
     set<int> getEpsilonTransitions(int from) const;
     string getTokenPattern(int state) const;
@@ -54,7 +53,11 @@ public:
 
 	static map<int, int> getReachableStates(const Automaton & a);
 	static Automaton minimize(const Automaton & a);
+
     static Automaton unite(const vector<Automaton> & automata);
+
+	static set<int> epsilonClosure(const Automaton & a, const set<int> & states);
+	static Automaton determinize(const Automaton & nfa);
 
     // visualizar tabela de transições
     void printTable();

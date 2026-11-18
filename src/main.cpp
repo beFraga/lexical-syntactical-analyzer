@@ -19,18 +19,14 @@ int main() {
 	}
 
 	auto a = Automaton::unite(auts);
-	a.printTable();
-	auto min_a = Automaton::minimize(a);
-	min_a.printTable();
+	auto det_a = Automaton::determinize(a);
+	auto min_a = Automaton::minimize(det_a);
 
+	std::cout << "Teste de automatos:" << std::endl;
+	std::cout << "Estados originais: " << det_a.getStates().size() << endl;
+	std::cout << "Estados minimizados: " << min_a.getStates().size() << endl << endl;
+	std::cout << "Comparação de resultados : (linha: determinizado | minimizado)" << endl;
 	for (auto &l : test)
-		std::cout << l << ": " << a.eval(l) << std::endl;
-
-	std::cout << "Teste de automatos reduzidos:" << std::endl;
-	std::cout << "qtd estados original: " << a.getStates().size() << endl;
-	std::cout << "qtd estados minimizado: " << min_a.getStates().size() << endl << endl;
-	std::cout << "Comparação de resultados : (linha: original | minimizado)" << endl;
-	for (auto &l : test)
-		std::cout << l << ": " << a.eval(l) << " | " << min_a.eval(l) << std::endl;
+		std::cout << l << ": " << det_a.eval(l) << " | " << min_a.eval(l) << std::endl;
 	return 0;
 }

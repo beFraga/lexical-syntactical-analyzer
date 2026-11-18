@@ -9,16 +9,11 @@ using namespace std;
 
 Automaton::Automaton() : _initialState(0) {}
 
-void Automaton::setInitialState(int state) {
-    _initialState = state;
-    addState(state);
-}
-
 int Automaton::getInitialState() const {
     return _initialState;
 }
 
-const set<int>& Automaton::getStates() const{
+const set<int>& Automaton::getStates() const {
     return _states;
 }
 
@@ -32,6 +27,11 @@ const set<char>& Automaton::getAlphabet() const {
 
 bool Automaton::isAccepting(int state) const {
 	return _acceptingStates.find(state) != _acceptingStates.end();
+}
+
+void Automaton::setInitialState(int state) {
+    _initialState = state;
+    addState(state);
 }
 
 void Automaton::addState(int state) {
@@ -59,7 +59,7 @@ void Automaton::addEpsilonTransition(int from, int to) {
     _epsilonTransitions[from].insert(to);
 }
 
-set<int> Automaton::getTransitions(int from, char symbol) {
+set<int> Automaton::getTransitions(int from, char symbol) const {
     auto it = _transitions.find({from, symbol});
     if (it != _transitions.end()) {
         return it->second;
@@ -266,6 +266,86 @@ Automaton Automaton::unite(const vector<Automaton> & automata) {
     }
 
     return resultant;
+}
+
+set<int> Automaton::epsilonClosure(const Automaton & a, const set<int> & states) {
+	set<int> closure = states;
+	queue<int> q;
+
+	for (int s : states) q.push(s);
+
+	while (!q.empty()) {
+		auto t = q.front();
+		q.pop();
+		set<int> epsDest = a.getEpsilonTransitions(t);
+		for (int dest : epsDest)
+			if (closure.find(dest) == closure.end()) {
+				closure.insert(dest);
+				q.push(dest);
+			}
+	}
+	return closure;
+}
+
+Automaton Automaton::determinize(const Automaton & nfa) {
+	Automaton dfa;
+
+	auto alph = nfa.getAlphabet();
+	vector<set<int>> dStates;
+	queue<int> unmarkedStates;
+	
+	set<int> startSet = epsilonClosure(nfa, {nfa.getInitialState()});
+	dStates.push_back(startSet);
+	unmarkedStates.push(0);
+	dfa.addState(0);
+	dfa.setInitialState(0);
+
+	for (int s : startSet)
+		if (nfa.isAccepting(s)) {
+			dfa.addFinalState(0, nfa.getTokenPattern(s));
+			break;
+		}
+	
+	while (!unmarkedStates.empty()) {
+		int t = unmarkedStates.front();
+		unmarkedStates.pop();
+		set<int> T = dStates[t];
+
+		for (char a : alph) {
+			set<int> moveRes;
+			for (int s : T) {
+				set<int> dests = nfa.getTransitions(s, a);
+				moveRes.insert(dests.begin(), dests.end());
+			}
+
+			if (moveRes.empty()) continue;
+
+			set<int> U = epsilonClosure(nfa, moveRes);
+
+			int target_id = -1;
+			for (size_t i = 0; i < dStates.size(); i++)
+				if (dStates[i] == U) {
+					target_id = static_cast<int>(i);
+					break;
+				}
+			
+			if (target_id == -1) {
+				target_id = static_cast<int>(dStates.size());
+				dStates.push_back(U);
+				unmarkedStates.push(target_id);
+
+				dfa.addState(target_id);
+
+				for (int s : U)
+					if (nfa.isAccepting(s)) {
+						dfa.addFinalState(target_id, nfa.getTokenPattern(s));
+						break;
+					}
+			}
+		dfa.addTransition(t, a, target_id);
+		}
+	}
+	return dfa;
 }
 
 void Automaton::printTable() {
