@@ -52,6 +52,8 @@ public:
 	string eval(const std::string & input) const;
 	int getNextState(int from, char symbol) const;
 
+    static Automaton uniteAutomata(const vector<Automaton> & automata);
+
     // visualizar tabela de transições
     void printTable();
 };
