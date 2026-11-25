@@ -387,3 +387,8 @@ void Automaton::printTable() {
     }
     cout << endl;
 }
+
+
+
+
+
