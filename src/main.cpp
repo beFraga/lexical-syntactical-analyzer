@@ -6,8 +6,8 @@
 #define TESTCASE_FILE "testcase.txt"
 
 int main() {
-	auto exprs = InputReader::readInput(INPUT_FILE);
-	auto test = InputReader::readTest(TESTCASE_FILE);
+	auto exprs = InputReader::readRegexDefinitions(INPUT_FILE);
+	auto test = InputReader::readLines(TESTCASE_FILE);
 
 	std::vector<Automaton> auts;
 	for (auto [id, exp] : exprs) {
